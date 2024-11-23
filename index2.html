@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formulário de Clientes</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #a3ceff;
+            color: #333;
+        }
+
+        h1 {
+            text-align: center;
+            color: #0056b3;
+        }
+
+        .form-container {
+            display: flex;
+            justify-content: center;
+            max-width: 1200px;
+            margin: 20px auto;
+        }
+
+        .form-section {
+            flex: 1;
+            margin: 10px;
+            padding: 20px;
+            border: 1px solid #0056b3;
+            border-radius: 5px;
+            background-color: #c1d2ff;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        input[type="date"] {
+            width: 95%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #0056b3;
+            border-radius: 5px;
+            text-align: center;
+        }
+
+        button {
+            background-color: #0056b3;
+            color: white;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        button:hover {
+            background-color: #004494;
+        }
+
+        .delete-button {
+            background-color: red;
+        }
+
+        .delete-button:hover {
+            background-color: darkred;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th,
+        td {
+            border: 2px solid #0056b3;
+            padding: 10px;
+            text-align: center;
+        }
+
+        th {
+            background-color: #0056b3;
+            color: white;
+        }
+
+        .search-container {
+            display: flex;
+            justify-content: center;
+            max-width: 600px;
+            margin: 20px auto;
+        }
+
+        .botao1 {
+            background-color: #005ab9;
+            color: white;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 5px;
+            font-size: 16px;
+            border: none;
+            cursor: pointer;
+        }
+
+        .botao1:hover {
+            background-color: #00254d;
+        }
+
+        a {
+            margin-left: 68px;
+            font-family: Verdana;
+            font-size: 30px;
+            color: rgb(0, 0, 0);
+        }
+        section{
+            background-color: #ffffff;
+            padding: 8px;
+            border-radius: 10px;
+        }
+        h1{
+            font-size: 40px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <section>
+        <h1>FORMULÁRIO DE CLIENTE</h1>
+        <a href="index.html" class="botao1">Voltar</a>
+        <div class="form-container">
+            <div class="form-section">
+                <h2>Informações Pessoais</h2>
+                <form id="clientForm">
+                    <label for="">Nome do Cliente</label>
+                    <input type="text" id="name" placeholder="Nome do Cliente">
+                    <label for="">Contato</label>
+                    <input type="text" id="contact" placeholder="Contato">
+                    <label for="">Endereço Completo</label>
+                    <input type="text" id="fullAddress" placeholder="Endereço Completo">
+                </div>
+                <div class="form-section">
+                    <h2>Informações da Compra</h2>
+                    <label for="">Descrição do Produto</label>
+                    <input type="text" id="productDescription" placeholder="Descrição do Produto">
+                    <label for="">Valor de Compra</label>
+                    <input type="number" id="purchaseValue" placeholder="Valor de Compra">
+                    <label for="">Valor de Entrada</label>
+                    <input type="number" id="entryValue" placeholder="Valor de Entrada">
+                    <label for="">Data da Compra</label>
+                    <input type="date" id="purchaseDate" placeholder="Data da Compra">
+                    <label for="">Data do Vencimento</label>
+                    <input type="date" id="dueDate" placeholder="Data do Vencimento">
+                    <button type="submit">Adicionar Cliente</button><br><br><br>
+                    <button type="button" id="saveToJPG">Salvar Contatos</button>
+                </form>
+            </div>
+        </div>
+    </section><br>
+    
+    <section>
+        <div class="search-container">
+            <div class="form-section">
+                <h2>Buscar Cliente</h2>
+                <input type="text" id="searchName" placeholder="Nome do Cliente">
+                <button id="searchButton">Buscar</button>
+            </div>
+        </div>
+    </section><br>
+    
+    <section>
+        <table id="clientTable">
+            <thead>
+                <tr>
+                    <th>Nome</th>
+                    <th>Contato</th>
+                    <th>Descrição do Produto</th>
+                    <th>Valor de Compra</th>
+                    <th>Valor de Entrada</th>
+                    <th>Data da Compra</th>
+                    <th>Data do Vencimento</th>
+                    <th>Endereço Completo</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table><br>
+    </section>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const clients = JSON.parse(localStorage.getItem('clients')) || [];
+            clients.forEach(client => addClientToTable(client));
+            checkDueDates(clients);
+        });
+    
+        document.getElementById('clientForm').addEventListener('submit', function (event) {
+            event.preventDefault();
+            const name = document.getElementById('name').value;
+            const contact = document.getElementById('contact').value.startsWith('55') ? document.getElementById('contact').value : '55' + document.getElementById('contact').value;
+            const productDescription = document.getElementById('productDescription').value;
+            const purchaseValue = document.getElementById('purchaseValue').value;
+            const entryValue = document.getElementById('entryValue').value;
+            const purchaseDate = document.getElementById('purchaseDate').value.split('-').reverse().join('/');
+            const dueDate = document.getElementById('dueDate').value.split('-').reverse().join('/');
+            const fullAddress = document.getElementById('fullAddress').value;
+    
+            const client = { name, contact, productDescription, purchaseValue, entryValue, purchaseDate, dueDate, fullAddress };
+            saveClientToLocalStorage(client);
+            addClientToTable(client);
+            document.getElementById('clientForm').reset();
+            checkDueDates([client]);
+        });
+    
+        document.getElementById('searchButton').addEventListener('click', function () {
+            const searchName = document.getElementById('searchName').value.toLowerCase();
+            const clients = JSON.parse(localStorage.getItem('clients')) || [];
+            const filteredClients = clients.filter(client => client.name.toLowerCase().includes(searchName));
+            clearTable();
+            filteredClients.forEach(client => addClientToTable(client));
+            checkDueDates(filteredClients);
+        });
+    
+        document.getElementById('saveToJPG').addEventListener('click', function () {
+            const clients = JSON.parse(localStorage.getItem('clients')) || [];
+            const data = clients.map(client => `Nome: ${client.name}, Contato: ${client.contact}, Valor de Compra: R$ ${client.purchaseValue}, Data de Vencimento: ${client.dueDate}`).join('\n');
+            const blob = new Blob([data], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'clientes.txt';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        });
+    
+        function checkDueDates(clients) {
+            const today = new Date();
+            clients.forEach(client => {
+                const dueDate = new Date(client.dueDate.split('/').reverse().join('-'));
+                const oneDayBeforeDue = new Date(dueDate);
+                oneDayBeforeDue.setDate(dueDate.getDate() - 1);
+                if (today.toDateString() === oneDayBeforeDue.toDateString()) {
+                    alert(`Lembrete: O vencimento do cliente ${client.name} é amanhã!`);
+                }
+            });
+        }
+    
+        function addClientToTable(client) {
+            const table = document.getElementById('clientTable').getElementsByTagName('tbody')[0];
+            const newRow = table.insertRow();
+            newRow.innerHTML = `
+                <td>${client.name}</td>
+                <td>${client.contact}</td>
+                <td>${client.productDescription}</td>
+                <td>R$ ${parseFloat(client.purchaseValue).toFixed(2).replace('.', ',')}</td>
+                <td>R$ ${parseFloat(client.entryValue).toFixed(2).replace('.', ',')}</td>
+                <td>${client.purchaseDate}</td>
+                <td>${client.dueDate}</td>
+                <td>${client.fullAddress}</td>
+                <td>
+                    <button onclick="editClient(this)">Editar</button>
+                    <button class="delete-button" onclick="deleteClient(this)">Apagar</button>
+                    <button onclick="sendToWhatsApp('${client.contact}', '${client.name}', '${client.productDescription}', '${client.purchaseValue}', '${client.entryValue}', '${client.purchaseDate}', '${client.dueDate}', '${client.fullAddress}')">Enviar para WhatsApp</button>
+                </td>
+            `;
+            sortTable();
+        }
+    
+        function clearTable() {
+            const table = document.getElementById('clientTable').getElementsByTagName('tbody')[0];
+            table.innerHTML = '';
+        }
+    
+        function saveClientToLocalStorage(client) {
+            const clients = JSON.parse(localStorage.getItem('clients')) || [];
+            clients.push(client);
+            clients.sort((a, b) => a.name.localeCompare(b.name));
+            localStorage.setItem('clients', JSON.stringify(clients));
+        }
+    
+        function deleteClient(button) {
+            const row = button.parentNode.parentNode;
+            const name = row.cells[0].innerText;
+            const clients = JSON.parse(localStorage.getItem('clients')) || [];
+            const updatedClients = clients.filter(client => client.name !== name);
+            localStorage.setItem('clients', JSON.stringify(updatedClients));
+            row.parentNode.removeChild(row);
+        }
+    
+        function editClient(button) {
+            const row = button.parentNode.parentNode;
+            document.getElementById('name').value = row.cells[0].innerText;
+            document.getElementById('contact').value = row.cells[1].innerText;
+            document.getElementById('productDescription').value = row.cells[2].innerText;
+            document.getElementById('purchaseValue').value = row.cells[3].innerText.replace('R$ ', '').replace(',', '.');
+            document.getElementById('entryValue').value = row.cells[4].innerText.replace('R$ ', '').replace(',', '.');
+            document.getElementById('purchaseDate').value = row.cells[5].innerText;
+            document.getElementById('dueDate').value = row.cells[6].innerText;
+            document.getElementById('fullAddress').value = row.cells[7].innerText;
+            deleteClient(button);
+        }
+    
+        function sendToWhatsApp(contact, name, productDescription, purchaseValue, entryValue, purchaseDate, dueDate, fullAddress) {
+            const message = `Olá ${name},\n\nAqui estão os detalhes da sua compra:\n\nDescrição do Produto: ${productDescription}\nValor de Compra: R$ ${parseFloat(purchaseValue).toFixed(2).replace('.', ',')}\nValor de Entrada: R$ ${parseFloat(entryValue).toFixed(2).replace('.', ',')}\nData da Compra: ${purchaseDate}\nData do Vencimento: ${dueDate}\nEndereço: ${fullAddress}\n\nObrigado!`;
+            const whatsappUrl = `https://api.whatsapp.com/send?phone=${contact}&text=${encodeURIComponent(message)}`;
+            window.open(whatsappUrl, '_blank');
+        }
+    
+        function sortTable() {
+            const table = document.getElementById('clientTable').getElementsByTagName('tbody')[0];
+            const rows = Array.from(table.rows);
+            rows.sort((a, b) => a.cells[0].innerText.localeCompare(b.cells[0].innerText));
+            rows.forEach(row => table.appendChild(row));
+        }
+    </script>
+    
+</body>
+
+</html>

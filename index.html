@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Página de Estoque e Orçamento</title>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        body {
+            font-family: Verdana;
+            font-size: 20px;
+            background-color: #a3ceff;
+            color: #333;
+            margin: 0;
+            padding: 8px;
+        }
+
+        h1,
+        h2,
+        h3 {
+            color: #0056b3;
+        }
+
+        input[type="text"],
+        input[type="number"] {
+            padding: 10px;
+            margin: 5px 0;
+            border: 1px solid #0056b3;
+            border-radius: 10px;
+            width: calc(100% - 22px);
+            font-size: 15px;
+        }
+
+        button {
+            background-color: #0056b3;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px 0;
+            font-size: 15px;
+        }
+
+        button:hover {
+            background-color: #004494;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+
+        }
+
+        th,
+        td {
+            border: 1px solid #0056b3;
+            padding: 10px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #e7f3ff;
+        }
+
+        #sugestoes {
+            border: 1px solid #0056b3;
+            background-color: #ffffff;
+            position: absolute;
+            z-index: 1;
+            display: none;
+            max-height: 150px;
+            overflow-y: auto;
+            font-size: 15px;
+        }
+
+        .sugestao {
+            padding: 10px;
+            cursor: pointer;
+        }
+
+        .sugestao:hover {
+            background-color: #e7f3ff;
+        }
+
+        section {
+            background-color: #ffffff;
+            padding: 8px;
+            border-radius: 10px;
+        }
+
+        a {
+            margin-left: 65%;
+            font-family: Verdana;
+            font-size: 30px;
+            color: rgb(0, 0, 0);
+        }
+
+        .botao1 {
+            background-color: #005ab9;
+            color: white;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 5px;
+            font-size: 16px;
+            border: none;
+            cursor: pointer;
+        }
+
+        .botao1:hover {
+            background-color: #00254d;
+        }
+    </style>
+</head>
+
+<body>
+
+    <section>
+        <div id="orcamento">
+
+            <h1 style="font-size: 40px;">VENDAS <a href="index2.html" class="botao1">Formulário de Clientes</a>
+                <h1>
+                    <input type="text" id="produtoOrcamento" placeholder="Nome do Produto"
+                        oninput="mostrarSugestoes()" />
+                    <div id="sugestoes"></div>
+                    <input type="number" id="quantidadeOrcamento" placeholder="Quantidade" />
+                    <button onclick="adicionarProdutoOrcamento()">Adicionar</button>
+                    <button style="background-color: green;" onclick="confirmarVenda()">Confirmar Venda</button><br><br>
+                    <input type="text" id="numeroWhatsApp" placeholder="Número do WhatsApp" value="55" />
+                    <button onclick="enviarOrcamentoWhatsApp()">Enviar Orçamento para WhatsApp</button>
+        </div>
+
+        <div id="tabela-orcamento">
+            <h2>LISTA DE PRODUTOS</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Produto</th>
+                        <th>Quantidade</th>
+                        <th>Valor</th>
+                    </tr>
+                </thead>
+                <tbody id="tabela-orcamento-body">
+                </tbody>
+            </table>
+            <h3 style="color: red;font-size: 40px; text-align: center;">Total: R$ <span id="totalOrcamento">0,00</span>
+            </h3>
+        </div>
+    </section><br><br>
+
+    <section>
+        <div id="vendas">
+            <h2>Lista de Vendas</h2>
+            <table id="vendas">
+                <thead>
+                    <tr>
+                        <th>Produto</th>
+                        <th>Quantidade</th>
+                        <th>Valor</th>
+                    </tr>
+                </thead>
+                <tbody id="tabela-vendas-body">
+                </tbody>
+            </table>
+        </div>
+
+        <button style="background-color: red;" onclick="removerTodasVendas()">Apagar Todas as Vendas</button>
+        <button onclick="listaVendas()">Mostrar/Ocultar Estoque</button>
+        <button style="background-color: green;" onclick="salvarVendasTxt()">Salvar Vendas em TXT</button>
+
+    </section><br>
+
+    <section>
+        <h1>ESTOQUE DE PRODUTOS</h1>
+        <div>
+            <input type="text" id="produto" placeholder="Nome do Produto" />
+            <input type="number" id="quantidade" placeholder="Quantidade" />
+            <input type="text" id="valor" placeholder="Valor" />
+            <button style="background-color: green" onclick="adicionarProdutoEstoque()">Adicionar ao Estoque</button>
+            <button style="background-color: red;" onclick="removerTodoEstoque()">Remover Todo o Estoque</button>
+            <button onclick="toggleEstoque()">Mostrar/Ocultar Estoque</button>
+        </div>
+
+        <div id="estoque" style="display: none;">
+            <h2>Produtos em Estoque</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Produto</th>
+                        <th>Quantidade</th>
+                        <th>Valor</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody id="tabela-estoque">
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <script>
+        function toggleEstoque() {
+            const estoqueDiv = document.getElementById('estoque');
+            if (estoqueDiv.style.display === 'none') {
+                estoqueDiv.style.display = 'block';
+            } else {
+                estoqueDiv.style.display = 'none';
+            }
+        }
+    </script>
+    <script>
+        function listaVendas() {
+            const vendasDiv = document.getElementById('vendas');
+            if (vendasDiv.style.display === 'none') {
+                vendasDiv.style.display = 'block';
+            } else {
+                vendasDiv.style.display = 'none';
+            }
+        }
+    </script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', carregarEstoque);
+        setInterval(carregarEstoque, 1000);
+
+        function adicionarProdutoEstoque() {
+            const produto = document.getElementById('produto').value;
+            const quantidade = document.getElementById('quantidade').value;
+            const valor = document.getElementById('valor').value;
+
+            if (produto && quantidade && valor) {
+                const novaLinha = document.createElement('tr');
+                novaLinha.innerHTML = `
+                    <td>${produto}</td>
+                    <td>${quantidade}</td>
+                    <td>R$ ${valor}</td>
+                    <td>
+                        <button onclick="editarProduto(this)">Editar</button>
+                        <button onclick="removerProduto(this)">Remover</button>
+                    </td>
+                `;
+                Swal.fire('Adicionado ao Estoque!');
+                document.getElementById('tabela-estoque').appendChild(novaLinha);
+                salvarEstoque(produto, quantidade, valor);
+                limparCamposEstoque();
+            }
+        }
+
+        function limparCamposEstoque() {
+            document.getElementById('produto').value = '';
+            document.getElementById('quantidade').value = '';
+            document.getElementById('valor').value = '';
+        }
+
+        function salvarEstoque(produto, quantidade, valor) {
+            let estoque = JSON.parse(localStorage.getItem('estoque')) || [];
+            estoque.push({ produto, quantidade, valor });
+            localStorage.setItem('estoque', JSON.stringify(estoque));
+        }
+
+        function carregarEstoque() {
+            const estoque = JSON.parse(localStorage.getItem('estoque')) || [];
+            document.getElementById('tabela-estoque').innerHTML = '';
+            estoque.forEach(item => {
+                const novaLinha = document.createElement('tr');
+                novaLinha.innerHTML = `
+                    <td>${item.produto}</td>
+                    <td>${item.quantidade}</td>
+                    <td>R$ ${item.valor}</td>
+                    <td>
+                        <button onclick="editarProduto(this)">Editar</button>
+                        <button onclick="removerProduto(this)">Remover</button>
+                    </td>
+                `;
+                document.getElementById('tabela-estoque').appendChild(novaLinha);
+            });
+        }
+
+        function removerProduto(button) {
+            const linha = button.parentNode.parentNode;
+            const produto = linha.children[0].innerText;
+            const quantidade = parseInt(linha.children[1].innerText);
+            linha.remove();
+            removerDoEstoque(produto, quantidade);
+            Swal.fire('Removido do Estoque!');
+        }
+
+        function removerDoEstoque(produto, quantidade) {
+            let estoque = JSON.parse(localStorage.getItem('estoque')) || [];
+            estoque = estoque.filter(item => item.produto !== produto);
+            localStorage.setItem('estoque', JSON.stringify(estoque));
+        }
+
+        function editarProduto(button) {
+            const linha = button.parentNode.parentNode;
+            const produto = linha.children[0].innerText;
+            const quantidade = linha.children[1].innerText;
+            const valor = linha.children[2].innerText;
+
+            document.getElementById('produto').value = produto;
+            document.getElementById('quantidade').value = quantidade;
+            document.getElementById('valor').value = valor.replace('R$ ', '');
+
+            removerProduto(button);
+        }
+
+        function adicionarProdutoOrcamento() {
+            const produto = document.getElementById('produtoOrcamento').value;
+            const quantidade = document.getElementById('quantidadeOrcamento').value;
+
+            if (produto && quantidade) {
+                const estoque = JSON.parse(localStorage.getItem('estoque')) || [];
+                const itemEstoque = estoque.find(item => item.produto === produto);
+                const valor = itemEstoque ? itemEstoque.valor : 0;
+
+                const novaLinha = document.createElement('tr');
+                novaLinha.innerHTML = `
+                    <td>${produto}</td>
+                    <td>${quantidade}</td>
+                    <td>R$ ${valor}</td>
+                `;
+                document.getElementById('tabela-orcamento-body').appendChild(novaLinha);
+                atualizarTotalOrcamento();
+                limparCamposOrcamento();
+            }
+        }
+
+        function limparCamposOrcamento() {
+            document.getElementById('produtoOrcamento').value = '';
+            document.getElementById('quantidadeOrcamento').value = '';
+            document.getElementById('sugestoes').innerHTML = '';
+            document.getElementById('sugestoes').style.display = 'none';
+        }
+
+        function atualizarTotalOrcamento() {
+            const orcamento = document.getElementById('tabela-orcamento-body').children;
+            let total = 0;
+            for (let i = 0; i < orcamento.length; i++) {
+                const valor = parseFloat(orcamento[i].children[2].innerText.replace('R$ ', '').replace(',', '.'));
+                const quantidade = parseInt(orcamento[i].children[1].innerText);
+                total += valor * quantidade;
+            }
+            document.getElementById('totalOrcamento').innerText = total.toFixed(2).replace('.', ',');
+        }
+
+        function confirmarVenda() {
+            const orcamento = document.getElementById('tabela-orcamento-body').children;
+            for (let i = 0; i < orcamento.length; i++) {
+                const produto = orcamento[i].children[0].innerText;
+                const quantidade = parseInt(orcamento[i].children[1].innerText);
+                atualizarEstoque(produto, quantidade);
+            }
+            Swal.fire('Venda Realizada');
+            document.getElementById('tabela-orcamento-body').innerHTML = '';
+            atualizarTotalOrcamento();
+        }
+
+        function atualizarEstoque(produto, quantidade) {
+            let estoque = JSON.parse(localStorage.getItem('estoque')) || [];
+            estoque = estoque.map(item => {
+                if (item.produto === produto) {
+                    item.quantidade = Math.max(0, item.quantidade - quantidade);
+                }
+                return item;
+            });
+            localStorage.setItem('estoque', JSON.stringify(estoque));
+            carregarEstoque();
+        }
+
+        function removerTodoEstoque() {
+            localStorage.removeItem('estoque');
+            carregarEstoque();
+        }
+
+        function mostrarSugestoes() {
+            const input = document.getElementById('produtoOrcamento').value;
+            const estoque = JSON.parse(localStorage.getItem('estoque')) || [];
+            const sugestoes = estoque.filter(item => item.produto.toLowerCase().includes(input.toLowerCase()));
+            const sugestoesDiv = document.getElementById('sugestoes');
+            sugestoesDiv.innerHTML = '';
+
+            if (sugestoes.length > 0) {
+                sugestoesDiv.style.display = 'block';
+                sugestoes.forEach(item => {
+                    const div = document.createElement('div');
+                    div.className = 'sugestao';
+                    div.innerText = item.produto;
+                    div.onclick = () => {
+                        document.getElementById('produtoOrcamento').value = item.produto;
+                        sugestoesDiv.innerHTML = '';
+                        sugestoesDiv.style.display = 'none';
+                    };
+                    sugestoesDiv.appendChild(div);
+                });
+            } else {
+                sugestoesDiv.style.display = 'none';
+            }
+        }
+    </script><br>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            carregarEstoque();
+            carregarVendas();
+        });
+        setInterval(carregarEstoque, 1000);
+
+
+        function confirmarVenda() {
+            const orcamento = document.getElementById('tabela-orcamento-body').children;
+            for (let i = 0; i < orcamento.length; i++) {
+                const produto = orcamento[i].children[0].innerText;
+                const quantidade = parseInt(orcamento[i].children[1].innerText);
+                const valor = parseFloat(orcamento[i].children[2].innerText.replace('R$ ', '').replace(',', '.'));
+                registrarVenda(produto, quantidade, valor);
+                atualizarEstoque(produto, quantidade);
+            }
+            Swal.fire('Venda Realizada');
+            document.getElementById('tabela-orcamento-body').innerHTML = '';
+            atualizarTotalOrcamento();
+        }
+
+        function registrarVenda(produto, quantidade, valor) {
+            let vendas = JSON.parse(localStorage.getItem('vendas')) || [];
+            vendas.push({ produto, quantidade, valor });
+            localStorage.setItem('vendas', JSON.stringify(vendas));
+            carregarVendas();
+        }
+
+        function carregarVendas() {
+            const vendas = JSON.parse(localStorage.getItem('vendas')) || [];
+            document.getElementById('tabela-vendas-body').innerHTML = '';
+            vendas.forEach(item => {
+                const novaLinha = document.createElement('tr');
+                novaLinha.innerHTML = `
+                    <td>${item.produto}</td>
+                    <td>${item.quantidade}</td>
+                    <td>R$ ${item.valor}</td>
+                `;
+                document.getElementById('tabela-vendas-body').appendChild(novaLinha);
+            });
+        }
+
+        function salvarVendas() {
+            const vendas = JSON.parse(localStorage.getItem('vendas')) || [];
+            let texto = 'Produto,Quantidade,Valor\n';
+            vendas.forEach(item => {
+                texto += `${item.produto},${item.quantidade},R$ ${item.valor}\n`;
+            });
+            const blob = new Blob([texto], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'vendas.csv';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+        function removerTodasVendas() {
+            localStorage.removeItem('vendas');
+            carregarVendas();
+            Swal.fire('Todas as vendas foram apagadas!');
+        }
+        function salvarVendasTxt() {
+            const vendas = JSON.parse(localStorage.getItem('vendas')) || [];
+            let texto = 'Produto   -   Quantidade   -   Valor\n';
+            let total = 0;
+            let totalQuantidade = 0;
+            vendas.forEach(item => {
+                texto += `${item.produto}    -         ${item.quantidade}           -    R$ ${item.valor}\n`;
+                total += item.valor * item.quantidade;
+                totalQuantidade += item.quantidade;
+            });
+            texto += `
+        Total de Quantidade: ${totalQuantidade}\n`;
+            texto += `
+        Total de Vendas: R$ ${total}\n`;
+            const blob = new Blob([texto], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'vendas.txt';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+        function enviarOrcamentoWhatsApp() {
+            const numero = document.getElementById('numeroWhatsApp').value;
+            const orcamento = document.getElementById('tabela-orcamento-body').children;
+            let mensagem = 'Orçamento:\n\n';
+
+            for (let i = 0; i < orcamento.length; i++) {
+                const produto = orcamento[i].children[0].innerText;
+                const quantidade = orcamento[i].children[1].innerText;
+                const valor = orcamento[i].children[2].innerText;
+                mensagem += `Produto: ${produto}, Quantidade: ${quantidade}, Valor: ${valor}\n`;
+            }
+
+            mensagem += `\nTotal: R$ ${document.getElementById('totalOrcamento').innerText}`;
+
+            const url = `https://api.whatsapp.com/send?phone=${numero}&text=${encodeURIComponent(mensagem)}`;
+            window.open(url, '_blank');
+        }
+
+    </script>
+
+</body>
+
+</html>
